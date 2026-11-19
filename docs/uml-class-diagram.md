@@ -14,6 +14,7 @@ The things the shop talks about, and the class that holds the rules.
 ```mermaid
 classDiagram
     class Customer {
+        +int WELCOME_BONUS$
         -int id
         -String name
         -String email
@@ -38,6 +39,7 @@ classDiagram
         BRONZE
         SILVER
         GOLD
+        -String label
         -int minTotalPoints
         -int bonusPercent
         +forTotalPoints(int)$ Tier
@@ -184,9 +186,10 @@ classDiagram
     class InsufficientPointsException {
         -int needed
         -int available
+        +getMissing() int
     }
     class TierTooLowException {
-        -Tier requiredTier
+        -String tierName
     }
     class StorageException
 
