@@ -33,7 +33,7 @@ checked by the program, not by people.
 
 - [x] Day 1: Maven project, problem statement, user stories, UML draft, backlog
 - [x] Day 2: exception classes and the domain model
-- [ ] Day 3: the service with all the rules
+- [x] Day 3: the service with all the rules
 - [ ] Day 4: JSON storage and the Factory Method pattern
 - [ ] Day 5: console menu, final documents and the release
 

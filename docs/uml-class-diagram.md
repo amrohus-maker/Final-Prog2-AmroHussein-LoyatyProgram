@@ -71,6 +71,7 @@ classDiagram
     }
 
     class LoyaltyService {
+        +double MAX_PURCHASE$
         -List~Customer~ customers
         -List~Reward~ rewards
         -int nextId
@@ -79,6 +80,8 @@ classDiagram
         +findCustomer(String) Customer
         +recordPurchase(Customer, double) int
         +redeem(Customer, int) String
+        +getCustomers() List~Customer~
+        +getRewards() List~Reward~
         +getLeaderboard() List~Customer~
         +getCustomersByName() List~Customer~
         +getCustomersByJoinDate() List~Customer~
