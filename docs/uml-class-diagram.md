@@ -1,7 +1,6 @@
-# UML class diagrams (draft)
+# UML class diagrams
 
-This is the plan from Day 1. The diagrams are updated whenever the code changes, so that they match
-the finished program.
+These diagrams follow the code. They are updated after every stage, and the console menu is added on Day 5.
 
 They are written in [Mermaid](https://mermaid.js.org/), so GitHub shows them as pictures and the text
 under each picture is the editable source. Notation: `+` public, `-` private, `*` abstract, `$` static.
@@ -25,6 +24,7 @@ classDiagram
         +spend(int, String) void
         +getTier() Tier
         +getHistory() List~Transaction~
+        +isValid() boolean
         +compareTo(Customer) int
     }
 
@@ -32,6 +32,7 @@ classDiagram
         -String date
         -int points
         -String description
+        +isValid() boolean
     }
 
     class Tier {
@@ -72,9 +73,11 @@ classDiagram
 
     class LoyaltyService {
         +double MAX_PURCHASE$
+        -DataStorage storage
         -List~Customer~ customers
         -List~Reward~ rewards
         -int nextId
+        +LoyaltyService(DataStorage)
         +register(String, String) Customer
         +findCustomer(int) Customer
         +findCustomer(String) Customer
@@ -86,6 +89,7 @@ classDiagram
         +getCustomersByName() List~Customer~
         +getCustomersByJoinDate() List~Customer~
         +search(String) List~Customer~
+        -saveAll() void
     }
 
     LoyaltyService "1" o-- "0..*" Customer : customers
@@ -119,8 +123,10 @@ classDiagram
 
     class JsonStorage {
         -String filePath
+        -Gson gson
         +save(List~Customer~) void
         +load() List~Customer~
+        -checkAll(Customer[]) List~Customer~
     }
 
     class MemoryStorage {
@@ -148,7 +154,9 @@ classDiagram
     }
 
     class Main {
+        -String DATA_FILE$
         +main(String[])$ void
+        -chooseFactory(String[])$ StorageFactory
     }
 
     DataStorage <|.. JsonStorage
@@ -161,6 +169,7 @@ classDiagram
     LoyaltyService "1" --> "1" DataStorage : storage
     Main ..> StorageFactory : uses
     Main ..> LoyaltyService : creates
+    DataStorage ..> Customer : saves and loads
 ```
 
 | Role in the Factory Method pattern | Class |
@@ -169,6 +178,10 @@ classDiagram
 | Concrete products | `JsonStorage`, `MemoryStorage` |
 | Creator (abstract) | `StorageFactory` with the factory method `createStorage()` |
 | Concrete creators | `JsonStorageFactory`, `MemoryStorageFactory` |
+| Client | `Main` chooses the factory; `LoyaltyService` only uses the `DataStorage` it is given |
+
+`LoyaltyService` calls `storage.save(...)` after every change. It never knows whether the storage is a
+JSON file or the memory.
 
 ## 3. Exceptions
 
