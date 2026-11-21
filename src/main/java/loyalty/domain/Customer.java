@@ -12,13 +12,14 @@ import java.util.List;
 public class Customer implements Comparable<Customer> {
     public static final int WELCOME_BONUS = 50;
 
-    private final int id;
-    private final String name;
-    private final String email;
-    private final String joinedOn;     // text like 2026-11-19
+    // not final, because Gson fills these fields when it loads the JSON file
+    private int id;
+    private String name;
+    private String email;
+    private String joinedOn;           // text like 2026-11-19
     private int points;                // what the customer can spend now
     private int totalEarned;           // everything ever earned, decides the tier
-    private final List<Transaction> history = new ArrayList<>();
+    private List<Transaction> history = new ArrayList<>();
 
     public Customer(int id, String name, String email) throws InvalidNameException, InvalidEmailException {
         if (id <= 0) {
@@ -61,6 +62,33 @@ public class Customer implements Comparable<Customer> {
     // We return a copy, so nobody outside can change our history.
     public List<Transaction> getHistory() {
         return new ArrayList<>(this.history);
+    }
+
+    // Gson does not call the constructor when it loads a file, so we use this to check the loaded data.
+    public boolean isValid() {
+        if (this.id <= 0 || this.joinedOn == null || this.joinedOn.trim().isEmpty() || this.history == null) {
+            return false;
+        }
+        try {
+            if (!checkName(this.name).equals(this.name) || !checkEmail(this.email).equals(this.email)) {
+                return false;
+            }
+        } catch (InvalidNameException | InvalidEmailException e) {
+            return false;
+        }
+        int balance = 0;
+        int earned = 0;
+        for (Transaction line : this.history) {
+            if (line == null || !line.isValid()) {
+                return false;
+            }
+            balance += line.getPoints();
+            if (line.getPoints() > 0) {
+                earned += line.getPoints();
+            }
+        }
+        // the points and the total must be what the history adds up to
+        return balance == this.points && earned == this.totalEarned && this.points >= 0;
     }
 
     // The service checks the purchase amount first, so a wrong number of points
