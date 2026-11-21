@@ -4,9 +4,10 @@ import java.time.LocalDate;
 
 
 public class Transaction {
-    private final String date;
-    private final int points;
-    private final String description;
+    // not final, because Gson fills these fields when it loads the JSON file
+    private String date;
+    private int points;
+    private String description;
 
     public Transaction(int points, String description) {
         if (points == 0) {
@@ -30,5 +31,12 @@ public class Transaction {
 
     public String getDescription() {
         return this.description;
+    }
+
+    // used to check data that was loaded from a file
+    public boolean isValid() {
+        return this.points != 0
+                && this.date != null && !this.date.trim().isEmpty()
+                && this.description != null && !this.description.trim().isEmpty();
     }
 }

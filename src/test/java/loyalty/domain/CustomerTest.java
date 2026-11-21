@@ -1,5 +1,6 @@
 package loyalty.domain;
 
+import com.google.gson.Gson;
 import loyalty.exception.InsufficientPointsException;
 import loyalty.exception.InvalidEmailException;
 import loyalty.exception.InvalidNameException;
@@ -10,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -170,5 +172,52 @@ class CustomerTest {
     @Test
     void theWelcomeBonusIsFiftyPoints() {
         assertEquals(50, Customer.WELCOME_BONUS);
+    }
+
+    // ---------- isValid: used to check customers that were loaded from a file ----------
+
+    // a customer written by hand the way it looks in the JSON file
+    private static final String GOOD = "{\"id\":1,\"name\":\"Ann Lee\",\"email\":\"ann@example.com\","
+            + "\"joinedOn\":\"2026-11-21\",\"points\":50,\"totalEarned\":50,"
+            + "\"history\":[{\"date\":\"2026-11-21\",\"points\":50,\"description\":\"Welcome bonus\"}]}";
+
+    private Customer fromJson(String json) {
+        return new Gson().fromJson(json, Customer.class);
+    }
+
+    @Test
+    void aCustomerThatWasUsedInTheNormalWayIsValid() throws Exception {
+        Customer customer = newCustomer();
+        assertTrue(customer.isValid());
+        customer.earn(100, "Purchase");
+        customer.spend(30, "Redeemed: something");
+        assertTrue(customer.isValid());
+    }
+
+    @Test
+    void loadedDataThatMakesSenseIsValid() {
+        assertTrue(fromJson(GOOD).isValid());
+    }
+
+    @Test
+    void loadedDataThatDoesNotMakeSenseIsNotValid() {
+        String noHistory = "{\"id\":1,\"name\":\"Ann Lee\",\"email\":\"ann@example.com\","
+                + "\"joinedOn\":\"2026-11-21\",\"points\":0,\"totalEarned\":0}";
+        String[] bad = {
+                GOOD.replace("\"id\":1", "\"id\":0"),
+                GOOD.replace("\"name\":\"Ann Lee\",", ""),
+                GOOD.replace("\"Ann Lee\"", "\" Ann Lee \""),
+                GOOD.replace("ann@example.com", "annexample.com"),
+                GOOD.replace("ann@example.com", "Ann@Example.com"),
+                GOOD.replace("\"joinedOn\":\"2026-11-21\",", ""),
+                noHistory,
+                GOOD.replace("\"points\":50,\"totalEarned\"", "\"points\":40,\"totalEarned\""),
+                GOOD.replace("\"totalEarned\":50", "\"totalEarned\":60"),
+                GOOD.replace("\"points\":50,\"description\"", "\"points\":0,\"description\""),
+                GOOD.replace("\"description\":\"Welcome bonus\"", "\"description\":\"  \""),
+        };
+        for (String json : bad) {
+            assertFalse(fromJson(json).isValid(), "should not be valid: " + json);
+        }
     }
 }

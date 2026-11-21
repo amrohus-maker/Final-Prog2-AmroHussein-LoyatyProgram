@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TransactionTest {
     @Test
@@ -24,5 +25,11 @@ class TransactionTest {
         assertThrows(IllegalArgumentException.class, () -> new Transaction(0, "nothing"));
         assertThrows(IllegalArgumentException.class, () -> new Transaction(5, "   "));
         assertThrows(IllegalArgumentException.class, () -> new Transaction(5, null));
+    }
+
+    @Test
+    void aTransactionMadeInTheNormalWayIsValid() {
+        assertTrue(new Transaction(25, "Purchase").isValid());
+        assertTrue(new Transaction(-60, "Redeemed: x").isValid());
     }
 }
