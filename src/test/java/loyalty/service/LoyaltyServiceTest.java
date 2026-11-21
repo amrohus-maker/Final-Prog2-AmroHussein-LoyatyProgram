@@ -11,6 +11,7 @@ import loyalty.exception.InvalidEmailException;
 import loyalty.exception.InvalidNameException;
 import loyalty.exception.RewardNotFoundException;
 import loyalty.exception.TierTooLowException;
+import loyalty.persistence.MemoryStorageFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,8 +26,9 @@ class LoyaltyServiceTest {
     private LoyaltyService service;
 
     @BeforeEach
-    void setUp() {
-        service = new LoyaltyService();
+    void setUp() throws Exception {
+        // the tests get their storage from a factory, so they never write a file
+        service = new LoyaltyService(new MemoryStorageFactory().createStorage());
     }
 
     // ---------- register ----------
