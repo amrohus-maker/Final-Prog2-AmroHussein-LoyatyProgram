@@ -12,7 +12,9 @@ import loyalty.exception.InvalidAmountException;
 import loyalty.exception.InvalidEmailException;
 import loyalty.exception.InvalidNameException;
 import loyalty.exception.RewardNotFoundException;
+import loyalty.exception.StorageException;
 import loyalty.exception.TierTooLowException;
+import loyalty.persistence.DataStorage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,11 +25,24 @@ import java.util.Locale;
 public class LoyaltyService {
     public static final double MAX_PURCHASE = 100000;
 
+    private final DataStorage storage;
     private final List<Customer> customers = new ArrayList<>();
     private final List<Reward> rewards = new ArrayList<>();
     private int nextId = 1;
 
-    public LoyaltyService() {
+    // The service only knows the DataStorage type. Whether it is a JSON file or the memory
+    // is decided by the StorageFactory that created the storage.
+    public LoyaltyService(DataStorage storage) throws StorageException {
+        if (storage == null) {
+            throw new IllegalArgumentException("The storage cannot be null");
+        }
+        this.storage = storage;
+        this.customers.addAll(storage.load());
+        for (Customer customer : this.customers) {
+            if (customer.getId() >= this.nextId) {
+                this.nextId = customer.getId() + 1;
+            }
+        }
         // the reward catalog, cheapest first
         this.rewards.add(new FreeItemReward("Free coffee", 60, Tier.BRONZE, "coffee"));
         this.rewards.add(new FreeItemReward("Free pastry", 120, Tier.BRONZE, "pastry"));
@@ -38,7 +53,7 @@ public class LoyaltyService {
     }
 
     public Customer register(String name, String email)
-            throws InvalidNameException, InvalidEmailException, DuplicateEmailException {
+            throws InvalidNameException, InvalidEmailException, DuplicateEmailException, StorageException {
         Customer customer = new Customer(this.nextId, name, email); // checks the name and the email
         for (Customer other : this.customers) {
             if (other.getEmail().equals(customer.getEmail())) {
@@ -48,6 +63,7 @@ public class LoyaltyService {
         customer.earn(Customer.WELCOME_BONUS, "Welcome bonus");
         this.customers.add(customer);
         this.nextId++;
+        this.saveAll();
         return customer;
     }
 
@@ -74,7 +90,7 @@ public class LoyaltyService {
     }
 
     // Returns the points that were earned. The bonus uses the tier the customer has BEFORE this purchase.
-    public int recordPurchase(Customer customer, double amount) throws InvalidAmountException {
+    public int recordPurchase(Customer customer, double amount) throws InvalidAmountException, StorageException {
         if (Double.isNaN(amount) || amount <= 0 || amount > MAX_PURCHASE) {
             throw new InvalidAmountException();
         }
@@ -84,18 +100,21 @@ public class LoyaltyService {
         if (points > 0) {
             String text = String.format(Locale.US, "Purchase $%.2f", amount);
             customer.earn(points, text);
+            this.saveAll();
         }
         return points;
     }
 
     // rewardNumber is the number in the catalog, the first reward is 1
     public String redeem(Customer customer, int rewardNumber)
-            throws RewardNotFoundException, TierTooLowException, InsufficientPointsException {
+            throws RewardNotFoundException, TierTooLowException, InsufficientPointsException, StorageException {
         if (rewardNumber < 1 || rewardNumber > this.rewards.size()) {
             throw new RewardNotFoundException(rewardNumber);
         }
         Reward reward = this.rewards.get(rewardNumber - 1);
-        return reward.redeem(customer);
+        String benefit = reward.redeem(customer);
+        this.saveAll();
+        return benefit;
     }
 
     // The lists below are copies, so nobody outside can change our own lists.
@@ -141,5 +160,10 @@ public class LoyaltyService {
             }
         }
         return found;
+    }
+
+    // called after every change, so the file is always up to date
+    private void saveAll() throws StorageException {
+        this.storage.save(new ArrayList<>(this.customers));
     }
 }

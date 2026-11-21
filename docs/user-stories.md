@@ -24,7 +24,7 @@ Priority: **M** = must have for version 1.0.0, **C** = could have later.
 | US-09 | As a cashier, I want to see the rewards catalog so that I can tell customers what they can save for. | Each reward shows its name, its cost, the tier it needs and what the customer gets. | M |
 | US-10 | As a user of the menu, I want a clear message when I type something wrong so that the program never crashes. | A menu choice that is not on the list shows "invalid choice" and the menu is shown again. Every error in the program has its own message. | M |
 | US-11 | As the owner, I want the data to be saved so that nothing is lost when the program closes. | Every change is saved in a JSON file. At the next start the customers, their points and their history are back. | M |
-| US-12 | As the owner, I want a clear message when the data file cannot be read so that I know what went wrong. | A missing or damaged JSON file shows a "storage" error and does not crash the program. A damaged file is not overwritten without a warning. | M |
+| US-12 | As the owner, I want a clear message when the data file cannot be read so that I know what went wrong. | A missing JSON file means a fresh start. A damaged or unreadable file shows a "storage" error and the program stops, so the damaged file is never overwritten. | M |
 | US-13 | As the owner, I want to choose where the data is kept when the program starts so that I can try it without writing a file. | By default the data is saved in the JSON file. Starting with `--memory` keeps the data only in memory. | M |
 
 ## Could have later
