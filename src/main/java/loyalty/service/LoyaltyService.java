@@ -144,7 +144,13 @@ public class LoyaltyService {
     // sorted with a lambda: newest members first
     public List<Customer> getCustomersByJoinDate() {
         List<Customer> copy = new ArrayList<>(this.customers);
-        copy.sort((a, b) -> b.getJoinedOn().compareTo(a.getJoinedOn()));
+        copy.sort((a, b) -> {
+            int result = b.getJoinedOn().compareTo(a.getJoinedOn());
+            if (result == 0) {
+                result = Integer.compare(b.getId(), a.getId());
+            }
+            return result;
+        });
         return copy;
     }
 

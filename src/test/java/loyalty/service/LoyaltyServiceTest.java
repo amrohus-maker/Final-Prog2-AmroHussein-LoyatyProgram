@@ -240,6 +240,19 @@ class LoyaltyServiceTest {
     }
 
     @Test
+    void whoeverJoinedLastComesFirstEvenOnTheSameDay() throws Exception {
+        Customer ann = service.register("Ann", "ann@example.com");
+        Customer bob = service.register("Bob", "bob@example.com");
+        Customer cy = service.register("Cy", "cy@example.com");
+
+        List<Customer> list = service.getCustomersByJoinDate();
+
+        assertSame(cy, list.get(0));
+        assertSame(bob, list.get(1));
+        assertSame(ann, list.get(2));
+    }
+
+    @Test
     void sortingNeverChangesTheOrderInsideTheService() throws Exception {
         Customer zed = service.register("Zed", "zed@example.com");
         Customer abe = service.register("Abe", "abe@example.com");
