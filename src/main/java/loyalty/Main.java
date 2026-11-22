@@ -5,6 +5,9 @@ import loyalty.persistence.JsonStorageFactory;
 import loyalty.persistence.MemoryStorageFactory;
 import loyalty.persistence.StorageFactory;
 import loyalty.service.LoyaltyService;
+import loyalty.ui.ConsoleApp;
+
+import java.util.Scanner;
 
 public class Main {
     private static final String DATA_FILE = "data/loyalty.json";
@@ -12,10 +15,10 @@ public class Main {
     public static void main(String[] args) {
         // We only use the abstract StorageFactory here, never "new JsonStorage".
         StorageFactory factory = chooseFactory(args);
-        try {
+        try (Scanner scanner = new Scanner(System.in)) {
             LoyaltyService service = new LoyaltyService(factory.createStorage());
-            // the console menu is added on Day 5
             System.out.println("Loyalty Program - " + service.getCustomers().size() + " customers loaded");
+            new ConsoleApp(service, scanner, System.out).run();
         } catch (StorageException e) {
             System.out.println("[error] " + e.getMessage());
         }
