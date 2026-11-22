@@ -1,6 +1,6 @@
 # UML class diagrams
 
-These diagrams follow the code. They are updated after every stage, and the console menu is added on Day 5.
+These diagrams follow the code. They are updated after every stage.
 
 They are written in [Mermaid](https://mermaid.js.org/), so GitHub shows them as pictures and the text
 under each picture is the editable source. Notation: `+` public, `-` private, `*` abstract, `$` static.
@@ -221,3 +221,56 @@ classDiagram
     LoyaltyException <|-- TierTooLowException
     LoyaltyException <|-- StorageException
 ```
+
+## 4. Console menu
+
+How the user talks to the program. `ConsoleApp` only reads and prints; every rule is in `LoyaltyService`.
+
+```mermaid
+classDiagram
+    class Main {
+        +main(String[])$ void
+    }
+
+    class ConsoleApp {
+        -LoyaltyService service
+        -Scanner in
+        -PrintStream out
+        +ConsoleApp(LoyaltyService, Scanner, PrintStream)
+        +run() void
+        -handle(String) boolean
+        -doChoice(String) void
+        -registerCustomer() void
+        -recordPurchase() void
+        -redeemReward() void
+        -showCustomer() void
+        -searchCustomers() void
+        -listCustomers() void
+        -showRewards() void
+        -askCustomer() Customer
+        -askAmount() double
+        -askNumber(String) int
+        -ask(String) String
+    }
+
+    class LoyaltyService {
+        +register(String, String) Customer
+        +recordPurchase(Customer, double) int
+        +redeem(Customer, int) String
+        +search(String) List~Customer~
+    }
+
+    class LoyaltyException
+
+    Main ..> LoyaltyService : creates
+    Main ..> ConsoleApp : creates and runs
+    ConsoleApp "1" --> "1" LoyaltyService : service
+    ConsoleApp ..> LoyaltyException : catches and shows
+```
+
+- `Main` creates the `LoyaltyService` (with the storage from the factory) and gives it to `ConsoleApp`
+  together with the keyboard (`Scanner`) and the screen (`PrintStream`).
+- `ConsoleApp.handle` catches every `LoyaltyException` and prints `[error]` and the message.
+  `InsufficientPointsException` is caught first, because it also says how many points are missing.
+- The keyboard and the screen are given to the constructor, so `ConsoleAppTest` can type into the menu
+  and read what it prints without a real keyboard.
